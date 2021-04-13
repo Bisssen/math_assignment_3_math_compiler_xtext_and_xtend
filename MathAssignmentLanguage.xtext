@@ -1,0 +1,51 @@
+grammar dk.sdu.mmmi.mdsd.MathAssignmentLanguage with org.eclipse.xtext.common.Terminals
+
+generate mathAssignmentLanguage "http://www.sdu.dk/mmmi/mdsd/MathAssignmentLanguage"
+
+MathSystem:
+	mathExpresions += Declaration*
+;
+
+Declaration:
+	MathExp | External
+;
+
+External:
+	'external' name=ID '(' parameters+=ID (',' parameters+=ID)* ')'
+;
+
+MathExp:
+	'result' tag=ID 'is' exp=Exp
+;
+
+Exp returns Expression:
+	Factor(('+' {Plus.left=current} | '-' {Minus.left=current}) right=Factor)*
+;
+
+Factor returns Expression:
+	Primary(('*' {Mult.left=current} | '/' {Div.left=current}) right=Primary)*
+;
+
+Primary returns Expression:
+	Constant | Parenthesis | Variable | UseVariable | ExternCall
+;
+
+Parenthesis returns Expression:
+	 {PAR} '(' innerExp=Exp ')'
+;
+
+Constant returns Expression:
+	{NUM} value=INT
+;
+
+Variable returns Expression:
+	{SYM} 'let' varName=ID '=' value=Exp 'in' innerExp=Exp 'end'
+;
+
+UseVariable returns Expression:
+	{VAR} varName=ID
+;
+
+ExternCall:
+	{EXT} target=[External] '(' parameters+=Exp (',' parameters+=Exp)* ')'
+;
